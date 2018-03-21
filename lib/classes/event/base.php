@@ -483,7 +483,7 @@ abstract class base implements \IteratorAggregate {
         } else if (strpos($legacy->action, 'remove') !== false) {
             $event->data['crud'] = 'u';
         } else if (strpos($legacy->action, 'delete') !== false) {
-            $event->data['crud'] = 'p';
+            $event->data['crud'] = 'd';
         } else if (strpos($legacy->action, 'create') !== false) {
             $event->data['crud'] = 'c';
         } else if (strpos($legacy->action, 'post') !== false) {
