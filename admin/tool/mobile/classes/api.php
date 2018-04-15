@@ -412,25 +412,30 @@ class api {
                 $timenow = time();
                 $expectedissuer = null;
                 foreach ($info['certinfo'] as $cert) {
+                    $signaturealgorithm = array_shift(array_intersect_key($cert, array_flip(preg_grep('/^Signature /', array_keys($cert)))));
+                    $startdate = array_shift(array_intersect_key($cert, array_flip(preg_grep('/^Start/', array_keys($cert)))));
+                    $expiredate = array_shift(array_intersect_key($cert, array_flip(preg_grep('/^Expire/', array_keys($cert)))));
+                    $subject = array_shift(array_intersect_key($cert, array_flip(preg_grep('/^Subject/', array_keys($cert)))));
+                    $issuer = array_shift(array_intersect_key($cert, array_flip(preg_grep('/^Issuer/', array_keys($cert)))));
                     // Check if the signature algorithm is weak (Android won't work with SHA-1).
-                    if ($cert['Signature Algorithm'] == 'sha1WithRSAEncryption' || $cert['Signature Algorithm'] == 'sha1WithRSA') {
+                    if ($signaturealgorithm == 'sha1WithRSAEncryption' || $signaturealgorithm == 'sha1WithRSA') {
                         $warnings[] = ['insecurealgorithmwarning', 'tool_mobile'];
                     }
                     // Check certificate start date.
-                    if (strtotime($cert['Start date']) > $timenow) {
+                    if (strtotime($startdate) > $timenow) {
                         $warnings[] = ['invalidcertificatestartdatewarning', 'tool_mobile'];
                     }
                     // Check certificate end date.
-                    if (strtotime($cert['Expire date']) < $timenow) {
+                    if (strtotime($expiredate) < $timenow) {
                         $warnings[] = ['invalidcertificateexpiredatewarning', 'tool_mobile'];
                     }
                     // Check the chain.
                     if ($expectedissuer !== null) {
-                        if ($expectedissuer !== $cert['Subject'] || $cert['Subject'] === $cert['Issuer']) {
+                        if ($expectedissuer !== $subject || $subject === $issuer) {
                             $warnings[] = ['invalidcertificatechainwarning', 'tool_mobile'];
                         }
                     }
-                    $expectedissuer = $cert['Issuer'];
+                    $expectedissuer = $issuer;
                 }
             }
         }
